@@ -19,7 +19,7 @@ func setupServer() *http.Server {
 		Handler: mux,
 	}
 
-	mux.Handle("/shorten", handlerShorten())
+	mux.Handle("/shorten", handlerShorten(nil))
 	mux.Handle("/stats/", handlerStats())
 	mux.Handle("/", handlerMain())
 
