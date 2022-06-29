@@ -20,7 +20,7 @@ func setupServer() *http.Server {
 	}
 
 	mux.Handle("/shorten", handlerShorten(nil))
-	mux.Handle("/stats/", handlerStats())
+	mux.Handle("/stats/", handlerStats(nil))
 	mux.Handle("/", handlerMain())
 
 	return svr

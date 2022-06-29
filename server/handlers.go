@@ -3,9 +3,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/julianooi/shorten"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Shortener interface {
@@ -57,11 +59,29 @@ func handlerShorten(shortener Shortener) http.HandlerFunc {
 	}
 }
 
-func handlerStats() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		// TODO: retrieve path from request
-		// TODO: retrieve stats from memory
-		// TODO: return stats
+type StatsChecker interface {
+	Status(key string) (shorten.Status, error)
+}
+
+func handlerStats(checker StatsChecker) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		p := r.URL.Path
+		parts := strings.Split(p, "/")
+
+		key := parts[len(parts)-1]
+
+		status, err := checker.Status(key)
+		if err != nil {
+			http.Error(w, "failed to check status", http.StatusInternalServerError)
+			log.Println(fmt.Errorf("failed to check status: %w", err))
+			return
+		}
+
+		enc := json.NewEncoder(w)
+		err = enc.Encode(status)
+		if err != nil {
+			log.Println(fmt.Errorf("failed to encode status: %w", err))
+		}
 	}
 }
 
