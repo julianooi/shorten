@@ -65,14 +65,17 @@ func TestHandlerShorten_Success(t *testing.T) {
 }
 
 type StubChecker struct {
-	called bool
-	key    string
+	called   bool
+	key      string
+	toReturn string
 }
 
 func (s *StubChecker) Status(key string) (shorten.Status, error) {
 	s.called = true
 	s.key = key
-	return shorten.Status{}, nil
+	return shorten.Status{
+		URL: s.toReturn,
+	}, nil
 }
 
 func TestHandlerStats_Success(t *testing.T) {
@@ -101,6 +104,53 @@ func TestHandlerStats_Success(t *testing.T) {
 
 			if checker.key != tc.key {
 				t.Errorf("checker expected to be called with provided key [%s], got [%s]", tc.key, checker.key)
+			}
+		})
+	}
+}
+
+type StubUpdater struct {
+	called bool
+}
+
+func (s *StubUpdater) Increment(key string) error {
+	s.called = true
+	return nil
+}
+
+func TestHandlerMain_Success(t *testing.T) {
+	tt := []struct {
+		url        string
+		redirectTo string
+	}{
+		{
+			url:        "http://www.example.com/abc123",
+			redirectTo: "http://www.example.com/my-super-long-test-path",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.url, func(t *testing.T) {
+			checker := &StubChecker{
+				toReturn: tc.redirectTo,
+			}
+			updater := &StubUpdater{}
+			handler := handlerMain(checker, updater)
+			recorder := httptest.NewRecorder()
+			rq := httptest.NewRequest("", tc.url, nil)
+
+			handler(recorder, rq)
+			if recorder.Code != http.StatusTemporaryRedirect {
+				t.Errorf("expected status code to be %d, got %d", http.StatusTemporaryRedirect, recorder.Code)
+			}
+
+			location := recorder.Header()["Location"][0]
+			if location != tc.redirectTo {
+				t.Errorf("expected location to be [%s], got [%s]", tc.redirectTo, location)
+			}
+
+			if !updater.called {
+				t.Errorf("expected updater to be called")
 			}
 		})
 	}

@@ -85,9 +85,31 @@ func handlerStats(checker StatsChecker) http.HandlerFunc {
 	}
 }
 
-func handlerMain() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		// TODO: retrieve path from request
-		// TODO: redirect to url
+type StatsUpdater interface {
+	Increment(key string) error
+}
+
+func handlerMain(checker StatsChecker, updater StatsUpdater) http.HandlerFunc {
+	return func(w http.ResponseWriter, rq *http.Request) {
+		path := rq.URL.Path
+		parts := strings.Split(path, "/")
+		if len(parts) != 2 {
+			http.Error(w, "invalid request url", http.StatusBadRequest)
+			return
+		}
+		key := parts[len(parts)-1]
+
+		status, err := checker.Status(key)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to retrieve url for [%s]", key), http.StatusInternalServerError)
+			log.Println(fmt.Errorf("failed to retrieve url for [%s]: %w", key, err))
+			return
+		}
+
+		err = updater.Increment(key)
+		if err != nil {
+			log.Println(fmt.Errorf("failed to increment count for [%s]: %w", key, err))
+		}
+		http.Redirect(w, rq, status.URL, http.StatusTemporaryRedirect)
 	}
 }

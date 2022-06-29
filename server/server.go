@@ -6,22 +6,29 @@ type Server struct {
 	server *http.Server
 }
 
-func NewServer() *Server {
-	svr := setupServer()
+type Repository interface {
+	Shortener
+	StatsChecker
+	StatsUpdater
+}
+
+func NewServer(repository Repository) *Server {
+	svr := setupServer(repository)
 	return &Server{
 		server: svr,
 	}
 }
 
-func setupServer() *http.Server {
+func setupServer(repository Repository) *http.Server {
 	mux := http.NewServeMux()
 	svr := &http.Server{
+		Addr:    ":8080",
 		Handler: mux,
 	}
 
-	mux.Handle("/shorten", handlerShorten(nil))
-	mux.Handle("/stats/", handlerStats(nil))
-	mux.Handle("/", handlerMain())
+	mux.Handle("/shorten", handlerShorten(repository))
+	mux.Handle("/stats/", handlerStats(repository))
+	mux.Handle("/", handlerMain(repository, repository))
 
 	return svr
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/julianooi/shorten/memory"
 	"github.com/julianooi/shorten/server"
 	"log"
 )
@@ -14,7 +15,8 @@ func main() {
 }
 
 func start() error {
-	svr := server.NewServer()
+	shortener := memory.NewShortener()
+	svr := server.NewServer(shortener)
 	err := svr.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start server: %w", err)
