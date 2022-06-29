@@ -19,12 +19,14 @@ func (s *status) increment() {
 	s.mu.Unlock()
 }
 
+// Shortener is an in memory implementation of a shortener, it is done sequentially
 type Shortener struct {
 	store map[string]*status
 	mu    sync.Mutex
 	count int
 }
 
+// NewShortener creates a new shortener instance
 func NewShortener() *Shortener {
 	return &Shortener{
 		store: make(map[string]*status),
@@ -63,6 +65,7 @@ func generateKey(count int) string {
 	return output
 }
 
+// Shorten shortens the url and returns the key for the url
 func (s *Shortener) Shorten(url string) (string, error) {
 	key := s.nextKey()
 	s.store[key] = &status{
@@ -74,6 +77,7 @@ func (s *Shortener) Shorten(url string) (string, error) {
 	return key, nil
 }
 
+// Status retrieves the status for the given key
 func (s *Shortener) Status(key string) (shorten.Status, error) {
 	state, ok := s.store[key]
 	if !ok {
@@ -86,6 +90,7 @@ func (s *Shortener) Status(key string) (shorten.Status, error) {
 	}, nil
 }
 
+// Increment increments the redirect count of the key
 func (s *Shortener) Increment(key string) error {
 	state, ok := s.store[key]
 	if !ok {

@@ -6,12 +6,14 @@ type Server struct {
 	server *http.Server
 }
 
+// Repository is a composite interface of all the functions
 type Repository interface {
 	Shortener
 	StatsChecker
 	StatsUpdater
 }
 
+// NewServer creates a new http server
 func NewServer(repository Repository) *Server {
 	svr := setupServer(repository)
 	return &Server{
@@ -33,6 +35,7 @@ func setupServer(repository Repository) *http.Server {
 	return svr
 }
 
+// Start starts the http server
 func (s *Server) Start() error {
 	return s.server.ListenAndServe()
 }

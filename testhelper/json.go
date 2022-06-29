@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// MarshalJSONReader is a helper to marshal json for use in tests
 func MarshalJSONReader(t *testing.T, target any) io.Reader {
 	t.Helper()
 	buf := &bytes.Buffer{}
@@ -18,6 +19,7 @@ func MarshalJSONReader(t *testing.T, target any) io.Reader {
 	return buf
 }
 
+// UnmarshalJSON is a helper to unmarshal json for use in tests
 func UnmarshalJSON(t *testing.T, reader io.Reader, target any) {
 	t.Helper()
 	dec := json.NewDecoder(reader)

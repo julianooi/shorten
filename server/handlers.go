@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// Shortener is used to shorten the url
 type Shortener interface {
 	Shorten(url string) (string, error)
 }
@@ -62,6 +63,7 @@ func handlerShorten(shortener Shortener) http.HandlerFunc {
 	}
 }
 
+// StatsChecker is used to check the status of the key
 type StatsChecker interface {
 	Status(key string) (shorten.Status, error)
 }
@@ -92,6 +94,7 @@ func handlerStats(checker StatsChecker) http.HandlerFunc {
 	}
 }
 
+// StatsUpdater is used to update the redirect count
 type StatsUpdater interface {
 	Increment(key string) error
 }

@@ -10,6 +10,7 @@ type Request struct {
 	URL string `json:"url"`
 }
 
+// Status consists of all the status information
 type Status struct {
 	URL       string    `json:"url"`
 	Count     int       `json:"count"`
