@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/julianooi/shorten"
 	"log"
@@ -72,6 +73,10 @@ func handlerStats(checker StatsChecker) http.HandlerFunc {
 
 		status, err := checker.Status(key)
 		if err != nil {
+			if errors.Is(err, shorten.ErrKeyNotFound) {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
 			http.Error(w, "failed to check status", http.StatusInternalServerError)
 			log.Println(fmt.Errorf("failed to check status: %w", err))
 			return
@@ -101,6 +106,10 @@ func handlerMain(checker StatsChecker, updater StatsUpdater) http.HandlerFunc {
 
 		status, err := checker.Status(key)
 		if err != nil {
+			if errors.Is(err, shorten.ErrKeyNotFound) {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
 			http.Error(w, fmt.Sprintf("failed to retrieve url for [%s]", key), http.StatusInternalServerError)
 			log.Println(fmt.Errorf("failed to retrieve url for [%s]: %w", key, err))
 			return
