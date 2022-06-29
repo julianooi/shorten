@@ -20,14 +20,14 @@ func (s *status) increment() {
 }
 
 type Shortener struct {
-	store map[string]status
+	store map[string]*status
 	mu    sync.Mutex
 	count int
 }
 
 func NewShortener() *Shortener {
 	return &Shortener{
-		store: make(map[string]status),
+		store: make(map[string]*status),
 	}
 }
 
@@ -65,7 +65,7 @@ func generateKey(count int) string {
 
 func (s *Shortener) Shorten(url string) (string, error) {
 	key := s.nextKey()
-	s.store[key] = status{
+	s.store[key] = &status{
 		url:       url,
 		createdAt: time.Now(),
 		mu:        sync.Mutex{},
