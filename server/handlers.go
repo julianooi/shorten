@@ -53,7 +53,9 @@ func handlerShorten(shortener Shortener) http.HandlerFunc {
 
 		w.WriteHeader(http.StatusOK)
 		enc := json.NewEncoder(w)
-		err = enc.Encode(response{URL: shortened})
+		err = enc.Encode(response{
+			URL: fmt.Sprintf("%s%s/%s", rq.URL.Scheme, rq.Host, shortened),
+		})
 		if err != nil {
 			log.Println(fmt.Errorf("failed to encode response: %w", err))
 		}
