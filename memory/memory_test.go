@@ -57,3 +57,37 @@ func TestShortener_Shorten_Success(t *testing.T) {
 		})
 	}
 }
+
+func TestShortener(t *testing.T) {
+	tt := []struct {
+		url string
+	}{
+		{url: "https://www.google.com/my-long-test-string"},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.url, func(t *testing.T) {
+			shortener := NewShortener()
+			key, err := shortener.Shorten(tc.url)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			status, err := shortener.Status(key)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if status.Count != 0 {
+				t.Errorf("expected count to be 0, got %d", status.Count)
+			}
+
+			err = shortener.Increment(key)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			status, err = shortener.Status(key)
+			if status.Count != 1 {
+				t.Errorf("expected count to be 1, got %d", status.Count)
+			}
+		})
+	}
+}
